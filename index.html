@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1004MAS Global Tactical Command</title>
+    <!-- Tailwind CSS (CDN으로 외부 호스팅 지원) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0b0c10; color: #c5c6c7; }
+        
+        .glass-panel {
+            background: rgba(31, 40, 51, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(102, 252, 241, 0.15);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .glass-panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(69, 162, 158, 0.2);
+            border: 1px solid rgba(102, 252, 241, 0.4);
+        }
+
+        .glow-text {
+            color: #ffffff;
+            text-shadow: 0 0 15px rgba(102, 252, 241, 0.6);
+        }
+        .accent-text { color: #66fcf1; }
+        .accent-bg { background-color: #45a29e; }
+        
+        .status-indicator {
+            width: 12px; height: 12px; border-radius: 50%; display: inline-block;
+            background-color: #66fcf1;
+            box-shadow: 0 0 12px #66fcf1;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Number Animation */
+        .count-up { font-variant-numeric: tabular-nums; }
+    </style>
+</head>
+<body>
+    <div class="flex items-center justify-center min-h-screen relative z-10 w-full max-w-7xl mx-auto px-4 py-12">
+        <div class="w-full">
+            <div class="text-center mb-16 relative">
+                <h1 class="text-5xl md:text-7xl font-black mb-4 select-none tracking-tighter" style="color: #fff; text-shadow: 0 0 30px rgba(102, 252, 241, 0.4), 0 0 10px rgba(102, 252, 241, 0.2);">
+                    1004MAS <span style="font-weight: 300; opacity: 0.9;">OMNISCIENCE</span>
+                </h1>
+                <p class="text-[#66fcf1] tracking-[0.3em] font-medium text-sm md:text-base uppercase" style="text-shadow: 0 0 10px rgba(102, 252, 241, 0.5);">Global Tactical Command Center</p>
+                <div class="mt-6 flex justify-center items-center gap-3">
+                    <span class="flex h-3 w-3 relative">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#66fcf1] opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-[#66fcf1]"></span>
+                    </span>
+                    <span class="text-gray-400 text-xs font-mono tracking-widest uppercase">All Systems Optimal</span>
+                </div>
+            </div>
+
+            <!-- 6 Nodes Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
+                
+                <!-- Node 1: 업비트 -->
+                <a href="https://upbit.1004mas.com" target="_blank" class="glass-panel p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.1s;">
+                    <div class="absolute inset-0 bg-gradient-to-br from-red-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-red-600 to-red-400"></div>
+                    <div class="flex items-start justify-between mb-6 relative">
+                        <div class="bg-red-500/20 p-4 rounded-xl text-red-500">
+                            <i class="fab fa-bitcoin text-3xl"></i>
+                        </div>
+                        <span class="text-xs font-mono text-gray-500 tracking-wider">NODE 01</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-red-400 transition-colors">UPBIT RADAR</h2>
+                    <p class="text-gray-400 text-sm flex-grow">원화(KRW) 마켓 김치 프리미엄 및 세력 펌핑 코인 감시망</p>
+                    <div class="mt-6 text-red-500/80 text-sm font-semibold flex items-center">
+                        ENTER ZONE <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-2 transition-transform"></i>
+                    </div>
+                </a>
+
+                <!-- Node 2: 바이비트 -->
+                <a href="https://crypto.1004mas.com" target="_blank" class="glass-panel p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.2s;">
+                    <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-yellow-600 to-yellow-400"></div>
+                    <div class="flex items-start justify-between mb-6 relative">
+                        <div class="bg-yellow-500/20 p-4 rounded-xl text-yellow-500">
+                            <i class="fas fa-chart-line text-3xl"></i>
+                        </div>
+                        <span class="text-xs font-mono text-gray-500 tracking-wider">NODE 02</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-yellow-400 transition-colors">BYBIT RADAR</h2>
+                    <p class="text-gray-400 text-sm flex-grow">글로벌 선물/현물 달러(USDT) 거래대금 폭발 및 청산맵 동향</p>
+                    <div class="mt-6 text-yellow-500/80 text-sm font-semibold flex items-center">
+                        ENTER ZONE <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-2 transition-transform"></i>
+                    </div>
+                </a>
+
+                <!-- Node 3: 미장 -->
+                <a href="https://us.1004mas.com" target="_blank" class="glass-panel p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.3s;">
+                    <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-blue-600 to-blue-400"></div>
+                    <div class="flex items-start justify-between mb-6 relative">
+                        <div class="bg-blue-500/20 p-4 rounded-xl text-blue-500">
+                            <i class="fas fa-globe-americas text-3xl"></i>
+                        </div>
+                        <span class="text-xs font-mono text-gray-500 tracking-wider">NODE 03</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">US STOCKS</h2>
+                    <p class="text-gray-400 text-sm flex-grow">나스닥 및 월스트리트 빅테크 AI 외신 팩트 체크망 (Firecrawl)</p>
+                    <div class="mt-6 text-blue-500/80 text-sm font-semibold flex items-center">
+                        ENTER ZONE <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-2 transition-transform"></i>
+                    </div>
+                </a>
+
+                <!-- Node 4: 한국장 -->
+                <a href="https://krx.1004mas.com" target="_blank" class="glass-panel p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.4s;">
+                    <div class="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-orange-600 to-orange-400"></div>
+                    <div class="flex items-start justify-between mb-6 relative">
+                        <div class="bg-orange-500/20 p-4 rounded-xl text-orange-500">
+                            <i class="fas fa-won-sign text-3xl"></i>
+                        </div>
+                        <span class="text-xs font-mono text-gray-500 tracking-wider">NODE 04</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-orange-400 transition-colors">KRX RADAR</h2>
+                    <p class="text-gray-400 text-sm flex-grow">한국투자증권(KIS) 코스피/코스닥 체결강도 및 호가창 방어선</p>
+                    <div class="mt-6 text-orange-500/80 text-sm font-semibold flex items-center">
+                        ENTER ZONE <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-2 transition-transform"></i>
+                    </div>
+                </a>
+
+                <!-- Node 5: 유튜브 공장 -->
+                <a href="https://youtube.1004mas.com" target="_blank" class="glass-panel p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.5s;">
+                    <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-purple-600 to-purple-400"></div>
+                    <div class="flex items-start justify-between mb-6 relative">
+                        <div class="bg-purple-500/20 p-4 rounded-xl text-purple-500">
+                            <i class="fab fa-youtube text-3xl"></i>
+                        </div>
+                        <span class="text-xs font-mono text-gray-500 tracking-wider">NODE 05</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">YOUTUBE FACTORY</h2>
+                    <p class="text-gray-400 text-sm flex-grow">글로벌 무인 다큐멘터리 채널 4개 자동화 렌더링 서버 상태</p>
+                    <div class="mt-6 text-purple-500/80 text-sm font-semibold flex items-center">
+                        ENTER ZONE <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-2 transition-transform"></i>
+                    </div>
+                </a>
+
+                <!-- Node 6: 스마트 비딩 -->
+                <a href="https://bidding.1004mas.com" target="_blank" class="glass-panel p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.6s;">
+                    <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-emerald-600 to-emerald-400"></div>
+                    <div class="flex items-start justify-between mb-6 relative">
+                        <div class="bg-emerald-500/20 p-4 rounded-xl text-emerald-500">
+                            <i class="fas fa-gavel text-3xl"></i>
+                        </div>
+                        <span class="text-xs font-mono text-gray-500 tracking-wider">NODE 06</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-emerald-400 transition-colors">SMART BIDDING</h2>
+                    <p class="text-gray-400 text-sm flex-grow">국가 조달청 G2B 입찰 감시 및 고객사 외주 계약 수주 방어망</p>
+                    <div class="mt-6 text-emerald-500/80 text-sm font-semibold flex items-center">
+                        ENTER ZONE <i class="fas fa-arrow-right ml-2 transform group-hover:translate-x-2 transition-transform"></i>
+                    </div>
+                </a>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
