@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1004MAS Global Tactical Command</title>
+    <!-- Tailwind CSS (CDN으로 외부 호스팅 지원) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0b0c10; color: #c5c6c7; }
+        
+        .glass-panel {
+            background: rgba(31, 40, 51, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(102, 252, 241, 0.15);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .glass-panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(69, 162, 158, 0.2);
+            border: 1px solid rgba(102, 252, 241, 0.4);
+        }
+
+        .glow-text {
+            color: #ffffff;
+            text-shadow: 0 0 15px rgba(102, 252, 241, 0.6);
+        }
+        .accent-text { color: #66fcf1; }
+        .accent-bg { background-color: #45a29e; }
+        
+        .status-indicator {
+            width: 12px; height: 12px; border-radius: 50%; display: inline-block;
+            background-color: #66fcf1;
+            box-shadow: 0 0 12px #66fcf1;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Number Animation */
+        .count-up { font-variant-numeric: tabular-nums; }
+    </style>
+</head>
+<body>
+    <div class="flex items-center justify-center min-h-screen relative z-10 w-full max-w-7xl mx-auto px-4 py-12">
+        <div class="w-full">
+            <div class="text-center mb-16 relative">
+                <h1 class="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black mb-4 select-none tracking-tighter flex flex-col md:flex-row justify-center items-center gap-1 md:gap-4" style="color: #fff; text-shadow: 0 0 30px rgba(102, 252, 241, 0.4), 0 0 10px rgba(102, 252, 241, 0.2);">
+                    <span>1004MAS</span> <span style="font-weight: 300; opacity: 0.9;">OMNISCIENCE</span>
+                </h1>
+                <p class="text-[#66fcf1] tracking-[0.1em] md:tracking-[0.3em] font-medium text-[10px] sm:text-xs md:text-base uppercase" style="text-shadow: 0 0 10px rgba(102, 252, 241, 0.5);">Global Tactical Command Center</p>
+                <div class="mt-4 md:mt-6 flex justify-center items-center gap-2 md:gap-3">
+                    <span class="flex h-2 w-2 md:h-3 md:w-3 relative">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#66fcf1] opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 md:h-3 md:w-3 bg-[#66fcf1]"></span>
+                    </span>
+                    <span class="text-gray-400 text-[9px] md:text-xs font-mono tracking-widest uppercase">All Systems Optimal</span>
+                </div>
+            </div>
+
+            <!-- [v4.0] System Operations Command Center -->
+            <div class="glass-panel p-8 mb-12 border-[#66fcf1]/30 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-20">
+                    <i class="fas fa-shield-alt text-6xl text-[#66fcf1]"></i>
+                </div>
+                <div class="flex flex-col md:flex-row justify-between items-center gap-8 relative">
+                    <div class="text-left w-full md:w-auto">
+                        <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-3">
+                            <span id="system-status-dot" class="status-indicator"></span> 
+                            STRATEGIC COMMAND CENTER
+                        </h3>
+                        <p class="text-gray-400 text-sm">전체 10개 전술 구역의 실시간 API 및 토큰 소모를 원격 제어합니다.</p>
+                        <div id="system-status-text" class="mt-2 text-[#66fcf1] font-mono text-xs uppercase tracking-widest">Status: Checking System...</div>
+                    </div>
+                    <div class="flex gap-4 w-full md:w-auto">
+                        <button id="btn-start" onclick="setSystemState('START')" class="flex-1 md:flex-none px-8 py-3 bg-[#45a29e] hover:bg-[#66fcf1] text-black font-black rounded-lg transition-all transform active:scale-95 shadow-[0_0_20px_rgba(102,252,241,0.3)]">
+                            <i class="fas fa-play mr-2"></i> 작동 시작 (Full Power)
+                        </button>
+                        <button id="btn-stop" onclick="setSystemState('STOP')" class="flex-1 md:flex-none px-8 py-3 bg-gray-800 hover:bg-red-900 text-gray-400 hover:text-white font-bold rounded-lg border border-gray-700 transition-all transform active:scale-95">
+                            <i class="fas fa-power-off mr-2"></i> 작동 중지 (Sleep Mode)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                async function updateStatus() {
+                    try {
+                        const res = await fetch('/api/system_state');
+                        const data = await res.json();
+                        const dot = document.getElementById('system-status-dot');
+                        const text = document.getElementById('system-status-text');
+                        const btnStart = document.getElementById('btn-start');
+                        const btnStop = document.getElementById('btn-stop');
+
+                        // Global UI
+                        if(data.global === 'START') {
+                            dot.style.backgroundColor = '#66fcf1';
+                            dot.style.boxShadow = '0 0 12px #66fcf1';
+                            text.innerText = 'STATUS: FULL OPERATIONS (ACTIVE)';
+                            btnStart.classList.add('opacity-50', 'pointer-events-none');
+                            btnStop.classList.remove('opacity-50', 'pointer-events-none');
+                        } else {
+                            dot.style.backgroundColor = '#ff4b2b';
+                            dot.style.boxShadow = '0 0 12px #ff4b2b';
+                            text.innerText = 'STATUS: DEEP SEA SLEEP MODE (PAUSED)';
+                            btnStop.classList.add('opacity-50', 'pointer-events-none');
+                            btnStart.classList.remove('opacity-50', 'pointer-events-none');
+                        }
+
+                        // Individual Node UI
+                        for(let i=1; i<=9; i++) {
+                            const nodeId = `node_0${i}`;
+                            const nodeBtn = document.getElementById(`btn-node-0${i}`);
+                            if(nodeBtn) {
+                                const isStart = data[nodeId] === 'START';
+                                nodeBtn.innerText = isStart ? 'ON' : 'OFF';
+                                
+                                // v4.4 Dual-Control Interface Styling
+                                if(isStart) {
+                                    nodeBtn.style.backgroundColor = '#66fcf1';
+                                    nodeBtn.style.color = '#000';
+                                    nodeBtn.style.boxShadow = '0 0 20px rgba(102, 252, 241, 0.6)';
+                                } else {
+                                    nodeBtn.style.backgroundColor = '#1a1a1a';
+                                    nodeBtn.style.color = '#ff4b2b';
+                                    nodeBtn.style.boxShadow = 'inset 0 0 10px rgba(255, 75, 43, 0.2)';
+                                }
+                                nodeBtn.style.borderColor = isStart ? '#66fcf1' : '#ff4b2b';
+                            }
+                        }
+
+                        // [v4.1] 개별 노드 건강상태 체크 (LED 점등)
+                        const healthRes = await fetch('/api/system_health');
+                        const health = await healthRes.json();
+                        Object.keys(health).forEach(node => {
+                            const nodeDot = document.getElementById(`status-${node.replace('_','-')}`);
+                            if(nodeDot) {
+                                if(health[node] === 'ONLINE') {
+                                    nodeDot.style.backgroundColor = '#66fcf1';
+                                    nodeDot.style.boxShadow = '0 0 8px #66fcf1';
+                                } else {
+                                    nodeDot.style.backgroundColor = '#444';
+                                    nodeDot.style.boxShadow = 'none';
+                                }
+                            }
+                        });
+
+                    } catch (e) {
+                        console.error('Status check failed', e);
+                    }
+                }
+
+                async function setSystemState(state, target = 'global') {
+                    try {
+                        const res = await fetch('/api/system_state', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ state: state, target: target })
+                        });
+                        if(res.ok) {
+                            updateStatus();
+                        }
+                    } catch (e) {
+                        alert('상태 변경 실패: ' + e);
+                    }
+                }
+
+                async function toggleNode(nodeId) {
+                    try {
+                        const res = await fetch('/api/system_state');
+                        const data = await res.json();
+                        const newState = data[nodeId] === 'START' ? 'STOP' : 'START';
+                        await setSystemState(newState, nodeId);
+                    } catch (e) { console.error(e); }
+                }
+
+                setInterval(updateStatus, 5000);
+                window.addEventListener('load', updateStatus);
+            </script>
+
+            <!-- 7 Nodes Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 auto-rows-fr">
+                
+                <!-- Node 1: 업비트 -->
+                <div class="glass-panel p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.1s;">
+                    <div class="absolute inset-0 bg-gradient-to-br from-red-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-red-600 to-red-400 pointer-events-none"></div>
+                    <a href="https://upbit.1004mas.com" target="_blank" class="flex-grow flex flex-col relative z-10">
+                        <div class="flex items-start justify-between mb-6 relative">
+                            <div class="bg-red-500/20 p-4 rounded-xl text-red-500">
+                                <i class="fab fa-bitcoin text-3xl"></i>
+                            </div>
+                            <div class="flex flex-col items-end">
+                                <span class="text-xs font-mono text-gray-500 tracking-wider">NODE 01</span>
+                                <span id="status-node-01" class="w-2 h-2 rounded-full bg-gray-600 mt-1 shadow-[0_0_5px_rgba(0,0,0,0.5)]"></span>
+                            </div>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-red-400 transition-colors">UPBIT RADAR</h2>
+                        <p class="text-gray-400 text-sm flex-grow">원화(KRW) 마켓 김치 프리미엄 및 세력 펌핑 코인 감시망</p>
+                    </a>
+                    <div class="mt-6 flex items-center gap-3 relative z-10">
+                        <a href="https://upbit.1004mas.com" target="_blank" class="flex-grow py-2 px-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-500 text-xs font-bold text-center hover:bg-red-500/20 transition-all">
+                            <i class="fas fa-external-link-alt mr-2"></i> ENTER
+                        </a>
+                        <button onclick="event.preventDefault(); toggleNode('node_01')" id="btn-node-01" class="w-16 py-2 rounded-lg text-[12px] font-black border transition-all shadow-lg">OFF</button>
+                    </div>
+                </div>
+
+                <!-- Node 2: 바이비트 -->
+                <div class="glass-panel p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.2s;">
+                    <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-yellow-600 to-yellow-400 pointer-events-none"></div>
+                    <a href="https://crypto.1004mas.com" target="_blank" class="flex-grow flex flex-col relative z-10">
+                        <div class="flex items-start justify-between mb-6 relative">
+                            <div class="bg-yellow-500/20 p-4 rounded-xl text-yellow-500">
+                                <i class="fas fa-chart-line text-3xl"></i>
+                            </div>
+                            <div class="flex flex-col items-end">
+                                <span class="text-xs font-mono text-gray-500 tracking-wider">NODE 02</span>
+                                <span id="status-node-02" class="w-2 h-2 rounded-full bg-gray-600 mt-1 shadow-[0_0_5px_rgba(0,0,0,0.5)]"></span>
+                            </div>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-yellow-400 transition-colors">BYBIT RADAR</h2>
+                        <p class="text-gray-400 text-sm flex-grow">글로벌 선물/현물 달러(USDT) 거래대금 폭발 및 청산맵 동향</p>
+                    </a>
+                    <div class="mt-6 flex items-center gap-3 relative z-10">
+                        <a href="https://crypto.1004mas.com" target="_blank" class="flex-grow py-2 px-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-yellow-500 text-xs font-bold text-center hover:bg-yellow-500/20 transition-all">
+                            <i class="fas fa-external-link-alt mr-2"></i> ENTER
+                        </a>
+                        <button onclick="event.preventDefault(); toggleNode('node_02')" id="btn-node-02" class="w-16 py-2 rounded-lg text-[12px] font-black border transition-all shadow-lg">OFF</button>
+                    </div>
+                </div>
+
+                <!-- Node 3: 미장 -->
+                <div class="glass-panel p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.3s;">
+                    <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-blue-600 to-blue-400 pointer-events-none"></div>
+                    <a href="https://us.1004mas.com" target="_blank" class="flex-grow flex flex-col relative z-10">
+                        <div class="flex items-start justify-between mb-6 relative">
+                            <div class="bg-blue-500/20 p-4 rounded-xl text-blue-500">
+                                <i class="fas fa-globe-americas text-3xl"></i>
+                            </div>
+                            <div class="flex flex-col items-end">
+                                <span class="text-xs font-mono text-gray-500 tracking-wider">NODE 03</span>
+                                <span id="status-node-03" class="w-2 h-2 rounded-full bg-gray-600 mt-1 shadow-[0_0_5px_rgba(0,0,0,0.5)]"></span>
+                            </div>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">US STOCKS</h2>
+                        <p class="text-gray-400 text-sm flex-grow">나스닥 및 월스트리트 빅테크 AI 외신 팩트 체크망 (Firecrawl)</p>
+                    </a>
+                    <div class="mt-6 flex items-center gap-3 relative z-10">
+                        <a href="https://us.1004mas.com" target="_blank" class="flex-grow py-2 px-4 bg-blue-500/10 border border-blue-500/30 rounded-lg text-blue-500 text-xs font-bold text-center hover:bg-blue-500/20 transition-all">
+                            <i class="fas fa-external-link-alt mr-2"></i> ENTER
+                        </a>
+                        <button onclick="event.preventDefault(); toggleNode('node_03')" id="btn-node-03" class="w-16 py-2 rounded-lg text-[12px] font-black border transition-all shadow-lg">OFF</button>
+                    </div>
+                </div>
+
+                <!-- Node 4: 한국장 (Cloudflare Tunnel) -->
+                <div class="glass-panel p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.4s;">
+                    <div class="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-orange-600 to-orange-400 pointer-events-none"></div>
+                    <a href="https://krx.1004mas.com" target="_blank" class="flex-grow flex flex-col relative z-10">
+                        <div class="flex items-start justify-between mb-6 relative">
+                            <div class="bg-orange-500/20 p-4 rounded-xl text-orange-500">
+                                <i class="fas fa-won-sign text-3xl"></i>
+                            </div>
+                            <div class="flex flex-col items-end">
+                                <span class="text-xs font-mono text-gray-500 tracking-wider">NODE 04</span>
+                                <span id="status-node-04" class="w-2 h-2 rounded-full bg-gray-600 mt-1 shadow-[0_0_5px_rgba(0,0,0,0.5)]"></span>
+                            </div>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-orange-400 transition-colors">KRX RADAR</h2>
+                        <p class="text-gray-400 text-sm flex-grow">한국투자증권(KIS) 코스피/코스닥 체결강도 및 호가창 방어선</p>
+                    </a>
+                    <div class="mt-6 flex items-center gap-3 relative z-10">
+                        <a href="https://krx.1004mas.com" target="_blank" class="flex-grow py-2 px-4 bg-orange-500/10 border border-orange-500/30 rounded-lg text-orange-500 text-xs font-bold text-center hover:bg-orange-500/20 transition-all">
+                            <i class="fas fa-external-link-alt mr-2"></i> ENTER
+                        </a>
+                        <button onclick="event.preventDefault(); toggleNode('node_04')" id="btn-node-04" class="w-16 py-2 rounded-lg text-[12px] font-black border transition-all shadow-lg">OFF</button>
+                    </div>
+                </div>
+
+                <!-- Node 5: 유튜브 공장 -->
+                <div class="glass-panel p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.5s;">
+                    <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-purple-600 to-purple-400 pointer-events-none"></div>
+                    <a href="https://youtube.1004mas.com" target="_blank" class="flex-grow flex flex-col relative z-10">
+                        <div class="flex items-start justify-between mb-6 relative">
+                            <div class="bg-purple-500/20 p-4 rounded-xl text-purple-500">
+                                <i class="fab fa-youtube text-3xl"></i>
+                            </div>
+                            <div class="flex flex-col items-end">
+                                <span class="text-xs font-mono text-gray-500 tracking-wider">NODE 05</span>
+                                <span id="status-node-05" class="w-2 h-2 rounded-full bg-gray-600 mt-1 shadow-[0_0_5px_rgba(0,0,0,0.5)]"></span>
+                            </div>
+                        </div>
+                        <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">YOUTUBE FACTORY</h2>
+                        <p class="text-gray-400 text-sm flex-grow">글로벌 무인 다큐멘터리 채널 4개 자동화 렌더링 서버 상태</p>
+                    </a>
+                    <div class="mt-6 flex items-center gap-3 relative z-10">
+                        <a href="https://youtube.1004mas.com" target="_blank" class="flex-grow py-2 px-4 bg-purple-500/10 border border-purple-500/30 rounded-lg text-purple-500 text-xs font-bold text-center hover:bg-purple-500/20 transition-all">
+                            <i class="fas fa-external-link-alt mr-2"></i> ENTER
+                        </a>
+                        <button onclick="event.preventDefault(); toggleNode('node_05')" id="btn-node-05" class="w-16 py-2 rounded-lg text-[12px] font-black border transition-all shadow-lg">OFF</button>
+                    </div>
+                </div>
+
+                <!-- Node 6: 스마트 비딩 -->
+                <div class="glass-panel p-6 md:p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.6s;">
+                    <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-emerald-600 to-emerald-400 pointer-events-none"></div>
+                    <a href="https://bidding.1004mas.com" target="_blank" class="flex-grow flex flex-col relative z-10">
+                        <div class="flex items-start justify-between mb-4 md:mb-6 relative">
+                            <div class="bg-emerald-500/20 p-3 md:p-4 rounded-xl text-emerald-500">
+                                <i class="fas fa-gavel text-2xl md:text-3xl"></i>
+                            </div>
+                            <div class="flex flex-col items-end">
+                                <span class="text-[10px] md:text-xs font-mono text-gray-500 tracking-wider">NODE 06</span>
+                                <span id="status-node-06" class="w-2 h-2 rounded-full bg-gray-600 mt-1 shadow-[0_0_5px_rgba(0,0,0,0.5)]"></span>
+                            </div>
+                        </div>
+                        <h2 class="text-xl md:text-2xl font-bold text-white mb-2 group-hover:text-emerald-400 transition-colors">SMART BIDDING</h2>
+                        <p class="text-gray-400 text-xs md:text-sm flex-grow">국가 조달청 G2B 입찰 감시 및 고객사 외주 계약 수주 방어망</p>
+                    </a>
+                    <div class="mt-6 flex items-center gap-3 relative z-10">
+                        <a href="https://bidding.1004mas.com" target="_blank" class="flex-grow py-2 px-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-emerald-500 text-xs font-bold text-center hover:bg-emerald-500/20 transition-all">
+                            <i class="fas fa-external-link-alt mr-2"></i> ENTER
+                        </a>
+                        <button onclick="event.preventDefault(); toggleNode('node_06')" id="btn-node-06" class="w-16 py-2 rounded-lg text-[12px] font-black border transition-all shadow-lg">OFF</button>
+                    </div>
+                </div>
+
+                <!-- Node 7: 야간 코스피 선물 -->
+                <div class="glass-panel p-6 md:p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.7s;">
+                    <div class="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-pink-600 to-pink-400 pointer-events-none"></div>
+                    <a href="https://night.1004mas.com" target="_blank" class="flex-grow flex flex-col relative z-10">
+                        <div class="flex items-start justify-between mb-4 md:mb-6 relative">
+                            <div class="bg-pink-500/20 p-3 md:p-4 rounded-xl text-pink-500">
+                                <i class="fas fa-moon text-2xl md:text-3xl"></i>
+                            </div>
+                            <div class="flex flex-col items-end">
+                                <span class="text-[10px] md:text-xs font-mono text-gray-500 tracking-wider">NODE 07</span>
+                                <span id="status-node-07" class="w-2 h-2 rounded-full bg-gray-600 mt-1 shadow-[0_0_5px_rgba(0,0,0,0.5)]"></span>
+                            </div>
+                        </div>
+                        <h2 class="text-xl md:text-2xl font-bold text-white mb-2 group-hover:text-pink-400 transition-colors">NIGHT SUPREME</h2>
+                        <p class="text-gray-400 text-xs md:text-sm flex-grow">코스피 200 야간 선물 및 미증시 매크로 외인 롤오버 추적망</p>
+                    </a>
+                    <div class="mt-6 flex items-center gap-3 relative z-10">
+                        <a href="https://night.1004mas.com" target="_blank" class="flex-grow py-2 px-4 bg-pink-500/10 border border-pink-500/30 rounded-lg text-pink-500 text-xs font-bold text-center hover:bg-pink-500/20 transition-all">
+                            <i class="fas fa-external-link-alt mr-2"></i> ENTER
+                        </a>
+                        <button onclick="event.preventDefault(); toggleNode('node_07')" id="btn-node-07" class="w-16 py-2 rounded-lg text-[12px] font-black border transition-all shadow-lg">OFF</button>
+                    </div>
+                </div>
+
+                <!-- Node 8: KRX Sector Sniper (Heatmap) -->
+                <div class="glass-panel p-6 md:p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.8s;">
+                    <div class="absolute inset-0 bg-gradient-to-br from-teal-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-teal-600 to-cyan-400 pointer-events-none"></div>
+                    <a href="https://krx.1004mas.com/krxmap/" target="_blank" class="flex-grow flex flex-col relative z-10">
+                        <div class="flex items-start justify-between mb-4 md:mb-6 relative">
+                            <div class="bg-teal-500/20 p-3 md:p-4 rounded-xl text-teal-400">
+                                <i class="fas fa-th-large text-2xl md:text-3xl"></i>
+                            </div>
+                            <div class="flex flex-col items-end">
+                                <span class="text-[10px] md:text-xs font-mono text-gray-500 tracking-wider">NODE 08</span>
+                                <span id="status-node-08" class="w-2 h-2 rounded-full bg-gray-600 mt-1 shadow-[0_0_5px_rgba(0,0,0,0.5)]"></span>
+                            </div>
+                        </div>
+                        <h2 class="text-xl md:text-2xl font-bold text-white mb-2 group-hover:text-teal-400 transition-colors">SECTOR SNIPER</h2>
+                        <p class="text-gray-400 text-xs md:text-sm flex-grow">섹터별 거래대금 30억+ 히트맵. 9대 테마 자금 유입 실시간 추적망</p>
+                    </a>
+                    <div class="mt-6 flex items-center gap-3 relative z-10">
+                        <a href="https://krx.1004mas.com/krxmap/" target="_blank" class="flex-grow py-2 px-4 bg-teal-500/10 border border-teal-500/30 rounded-lg text-teal-400 text-xs font-bold text-center hover:bg-teal-500/20 transition-all">
+                            <i class="fas fa-external-link-alt mr-2"></i> ENTER
+                        </a>
+                        <button onclick="event.preventDefault(); toggleNode('node_08')" id="btn-node-08" class="w-16 py-2 rounded-lg text-[12px] font-black border transition-all shadow-lg">OFF</button>
+                    </div>
+                </div>
+
+                <!-- Node 9: Morning Rundown -->
+                <div class="glass-panel p-6 md:p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.9s;">
+                    <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-indigo-600 to-indigo-400 pointer-events-none"></div>
+                    <a href="https://krxm.1004mas.com" target="_blank" class="flex-grow flex flex-col relative z-10">
+                        <div class="flex items-start justify-between mb-4 md:mb-6 relative">
+                            <div class="bg-indigo-500/20 p-3 md:p-4 rounded-xl text-indigo-400">
+                                <i class="fas fa-sun text-2xl md:text-3xl"></i>
+                            </div>
+                            <div class="flex flex-col items-end">
+                                <span class="text-[10px] md:text-xs font-mono text-gray-500 tracking-wider">NODE 09</span>
+                                <span id="status-node-09" class="w-2 h-2 rounded-full bg-gray-600 mt-1 shadow-[0_0_5px_rgba(0,0,0,0.5)]"></span>
+                            </div>
+                        </div>
+                        <h2 class="text-xl md:text-2xl font-bold text-white mb-2 group-hover:text-indigo-400 transition-colors">MORNING RUNDOWN</h2>
+                        <p class="text-gray-400 text-xs md:text-sm flex-grow">제갈의 아침 브리핑. 노트북LM 및 AI가 분석한 당일 작전 시나리오와 전략 요약</p>
+                    </a>
+                    <div class="mt-6 flex items-center gap-3 relative z-10">
+                        <a href="https://krxm.1004mas.com" target="_blank" class="flex-grow py-2 px-4 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-indigo-400 text-xs font-bold text-center hover:bg-indigo-500/20 transition-all">
+                            <i class="fas fa-external-link-alt mr-2"></i> ENTER
+                        </a>
+                        <button onclick="event.preventDefault(); toggleNode('node_09')" id="btn-node-09" class="w-16 py-2 rounded-lg text-[12px] font-black border transition-all shadow-lg">OFF</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
