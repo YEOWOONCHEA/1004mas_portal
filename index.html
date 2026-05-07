@@ -3,419 +3,750 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1004MAS Global Tactical Command</title>
-    <!-- Tailwind CSS (CDN으로 외부 호스팅 지원) -->
+    <title>Zhuge Morning Rundown</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- TradingView Advanced Chart Library -->
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <!-- 누적 아카이브 데이터 로드 -->
+    <script src="./krx_rundown_archive.js?v=20260504_v2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0b0c10; color: #c5c6c7; }
-        
-        .glass-panel {
-            background: rgba(31, 40, 51, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(102, 252, 241, 0.15);
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+            color: #e2e8f0;
+            overflow: hidden; /* 레이아웃 고정을 위해 외부 스크롤 제거 */
         }
-        .glass-panel:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(69, 162, 158, 0.2);
-            border: 1px solid rgba(102, 252, 241, 0.4);
+        
+        .gold-border-bottom { border-bottom: 1px solid #c8aa6e; }
+        .gold-text { color: #c8aa6e; }
+
+        /* Section Header Themes */
+        .theme-macro { background-color: #1e3a5f; color: #93c5fd; }
+        .theme-calendar { background-color: #2d3748; color: #cbd5e1; }
+        .theme-earnings { background-color: #274730; color: #86efac; }
+        .theme-movers { background-color: #3b2a50; color: #d8b4fe; }
+        .theme-broader { background-color: #1e3a5f; color: #93c5fd; }
+        .theme-secondary { background-color: #4a2818; color: #fdba74; }
+        .theme-week { background-color: #1f2937; color: #fde047; }
+        
+        .section-box {
+            background-color: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 0.375rem;
+            overflow: hidden;
+            height: auto;
         }
 
-        .glow-text {
-            color: #ffffff;
-            text-shadow: 0 0 15px rgba(102, 252, 241, 0.6);
-        }
-        .accent-text { color: #66fcf1; }
-        .accent-bg { background-color: #45a29e; }
-        
-        .status-indicator {
-            width: 12px; height: 12px; border-radius: 50%; display: inline-block;
-            background-color: #66fcf1;
-            box-shadow: 0 0 12px #66fcf1;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.1); }
-            100% { opacity: 1; transform: scale(1); }
+        .section-header {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        /* Number Animation */
-        .count-up { font-variant-numeric: tabular-nums; }
+        .section-content {
+            padding: 1rem;
+            font-size: 0.8125rem;
+            line-height: 1.5;
+            color: #94a3b8;
+            word-break: keep-all;
+        }
+
+        .bullet-arrow::before {
+            content: "›";
+            margin-right: 0.5rem;
+            color: #64748b;
+            font-weight: bold;
+        }
+        
+        .bullet-item { display: flex; margin-bottom: 0.75rem; }
+
+        .badge-green { background-color: rgba(34, 197, 94, 0.1); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.2); }
+        .badge-purple { background-color: rgba(168, 85, 247, 0.1); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.2); }
+        .badge-blue { background-color: rgba(59, 130, 246, 0.1); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.2); }
+        .badge-yellow { background-color: rgba(234, 179, 8, 0.1); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.2); }
+        .badge-red { background-color: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
+        
+        .ticker-highlight { color: #f1f5f9; font-weight: 700; }
+        .percent-up { color: #4ade80; }
+        .percent-down { color: #f87171; }
+        
+        .source-text { font-size: 0.65rem; color: #475569; font-style: italic; margin-top: 1rem; }
+
+        /* Date Navigation Buttons */
+        .date-btn {
+            padding: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748b;
+            text-align: center;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .date-btn:hover { background-color: #1e293b; color: #e2e8f0; }
+        .date-btn.active {
+            background-color: transparent;
+            color: #60a5fa;
+            border: 1px solid #3b82f6;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0b0f19; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #334155; }
     </style>
 </head>
-<body>
-    <div class="flex items-center justify-center min-h-screen relative z-10 w-full max-w-7xl mx-auto px-4 py-12">
-        <div class="w-full">
-            <div class="text-center mb-16 relative">
-                <h1 class="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black mb-4 select-none tracking-tighter flex flex-col md:flex-row justify-center items-center gap-1 md:gap-4" style="color: #fff; text-shadow: 0 0 30px rgba(102, 252, 241, 0.4), 0 0 10px rgba(102, 252, 241, 0.2);">
-                    <span>1004MAS</span> <span style="font-weight: 300; opacity: 0.9;">OMNISCIENCE</span>
-                </h1>
-                <p class="text-[#66fcf1] tracking-[0.1em] md:tracking-[0.3em] font-medium text-[10px] sm:text-xs md:text-base uppercase" style="text-shadow: 0 0 10px rgba(102, 252, 241, 0.5);">Global Tactical Command Center</p>
-                <div class="mt-4 md:mt-6 flex justify-center items-center gap-2 md:gap-3">
-                    <span class="flex h-2 w-2 md:h-3 md:w-3 relative">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#66fcf1] opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 md:h-3 md:w-3 bg-[#66fcf1]"></span>
-                    </span>
-                    <span class="text-gray-400 text-[9px] md:text-xs font-mono tracking-widest uppercase">All Systems Optimal</span>
+<body class="h-screen flex justify-center w-full p-4 md:p-6">
+
+    <div class="flex w-full max-w-[1800px] h-full gap-4 md:gap-8">
+        
+        <!-- SIDEBAR NAVIGATION -->
+        <aside class="w-16 md:w-20 flex-shrink-0 flex flex-col border-r border-gray-800 pr-2 h-full overflow-y-auto">
+            <div class="text-[9px] md:text-[10px] text-gray-500 font-bold tracking-widest mb-4 text-center">DATES</div>
+            <div id="date-list" class="flex flex-col gap-2">
+                <!-- Javascript가 아카이브에서 날짜 목록을 생성합니다 -->
+            </div>
+        </aside>
+
+        <!-- MAIN DASHBOARD -->
+        <main class="flex-1 h-full overflow-y-auto pr-2 pb-12">
+            
+            <!-- HEADER -->
+            <header class="pb-3 gold-border-bottom mb-4">
+                <div class="flex justify-between items-end">
+                    <div>
+                        <div class="gold-text text-[10px] font-bold tracking-[0.15em] mb-1">프리마켓 에디션 · 내부 전략 배포 전용</div>
+                        <h1 class="text-xl font-bold text-white tracking-tight flex flex-col md:flex-row md:items-baseline gap-2 md:gap-3">
+                            일일 시황 요약 (KRX)
+                            <span class="text-xs text-slate-400 font-medium tracking-normal mt-1 md:mt-0">am.05:30 (Morning Rundown) / pm.15:40 (Daily Report)</span>
+                        </h1>
+                    </div>
+                    <div class="text-right flex flex-col items-end gap-2">
+                        <div id="render-date" class="text-gray-400 text-sm font-semibold">로딩 중...</div>
+                        <div id="update-time-display" class="text-[10px] text-blue-400 font-bold tracking-widest mt-1"><i class="fas fa-sync-alt fa-spin mr-1"></i>업데이트 확인 중...</div>
+                        <div class="flex gap-2 mt-2">
+                            <button onclick="copyForNotebookLM()" class="bg-blue-900/80 hover:bg-blue-800 text-[10px] font-bold px-3 py-1.5 rounded border border-blue-700 text-blue-200 transition-colors flex items-center gap-1.5 cursor-pointer">
+                                <i class="fas fa-copy text-white"></i> NotebookLM 01~07 복사
+                            </button>
+                            <button onclick="document.getElementById('rotation-modal').classList.remove('hidden')" class="bg-gray-800/80 hover:bg-gray-700 text-[10px] font-bold px-3 py-1.5 rounded border border-gray-700 text-gray-300 transition-colors flex items-center gap-1.5 cursor-pointer">
+                                <i class="fas fa-chart-line text-purple-400"></i> 1-Year Sector Rotation
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- SEARCH BAR (Zhuge Mobile Search & Linker) -->
+            <div class="mb-6 relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-gray-500"></i>
+                </div>
+                <input type="text" id="zhuge-search-input" onkeydown="handleZhugeSearch(event)" placeholder="종목명 입력 후 Enter (예: 삼성전자)..." class="w-full bg-[#111827]/80 border border-gray-700 text-white text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block pl-10 p-3 placeholder-gray-500 backdrop-blur-sm transition-all focus:bg-[#1f2937]">
+                <button onclick="executeZhugeSearch()" class="absolute inset-y-0 right-0 px-4 text-xs font-bold text-blue-400 hover:text-blue-300">검색</button>
+            </div>
+
+            <!-- TLDR EXECUTIVE SUMMARY -->
+            <div id="tldr-container" class="bg-[#1e3a5f]/30 border border-[#93c5fd]/30 rounded-md p-4 mb-6 hidden">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-bolt text-yellow-400 mt-1 text-lg"></i>
+                    <div class="flex-1">
+                        <div class="text-[10px] text-blue-400 font-bold tracking-widest mb-1 uppercase flex justify-between items-center">
+                            <span>Today's TL;DR</span>
+                            <span class="section-update-time opacity-70 font-normal text-[9px] lowercase tracking-normal text-gray-400"></span>
+                        </div>
+                        <div id="tldr-content" class="text-sm md:text-[15px] font-bold text-white leading-relaxed word-break-keep-all">로딩 중...</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- [v4.0] System Operations Command Center -->
-            <div class="glass-panel p-8 mb-12 border-[#66fcf1]/30 relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-4 opacity-20">
-                    <i class="fas fa-shield-alt text-6xl text-[#66fcf1]"></i>
-                </div>
-                <div class="flex flex-col md:flex-row justify-between items-center gap-8 relative">
-                    <div class="text-left w-full md:w-auto">
-                        <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-3">
-                            <span id="system-status-dot" class="status-indicator"></span> 
-                            STRATEGIC COMMAND CENTER
-                        </h3>
-                        <p class="text-gray-400 text-sm">전체 10개 전술 구역의 실시간 API 및 토큰 소모를 원격 제어합니다.</p>
-                        <div id="system-status-text" class="mt-2 text-[#66fcf1] font-mono text-xs uppercase tracking-widest">Status: Checking System...</div>
-                    </div>
-                    <div class="flex gap-4 w-full md:w-auto">
-                        <button id="btn-start" onclick="setSystemState('START')" class="flex-1 md:flex-none px-8 py-3 bg-[#45a29e] hover:bg-[#66fcf1] text-black font-black rounded-lg transition-all transform active:scale-95 shadow-[0_0_20px_rgba(102,252,241,0.3)]">
-                            <i class="fas fa-play mr-2"></i> 작동 시작 (Full Power)
-                        </button>
-                        <button id="btn-stop" onclick="setSystemState('STOP')" class="flex-1 md:flex-none px-8 py-3 bg-gray-800 hover:bg-red-900 text-gray-400 hover:text-white font-bold rounded-lg border border-gray-700 transition-all transform active:scale-95">
-                            <i class="fas fa-power-off mr-2"></i> 작동 중지 (Sleep Mode)
-                        </button>
-                    </div>
-                </div>
+            <!-- STATS BAR -->
+            <div id="top-stats-container" class="flex flex-wrap justify-between items-center text-[10px] md:text-xs font-bold tracking-wider border-b border-gray-800 pb-3 mb-6 gap-4">
+                <!-- 동적 렌더링 영역 -->
             </div>
 
-            <script>
-                async function updateStatus() {
-                    try {
-                        const res = await fetch('/api/system_state');
-                        const data = await res.json();
-                        const dot = document.getElementById('system-status-dot');
-                        const text = document.getElementById('system-status-text');
-                        const btnStart = document.getElementById('btn-start');
-                        const btnStop = document.getElementById('btn-stop');
-
-                        // Global UI
-                        if(data.global === 'START') {
-                            dot.style.backgroundColor = '#66fcf1';
-                            dot.style.boxShadow = '0 0 12px #66fcf1';
-                            text.innerText = 'STATUS: FULL OPERATIONS (ACTIVE)';
-                            btnStart.classList.add('opacity-50', 'pointer-events-none');
-                            btnStop.classList.remove('opacity-50', 'pointer-events-none');
-                        } else {
-                            dot.style.backgroundColor = '#ff4b2b';
-                            dot.style.boxShadow = '0 0 12px #ff4b2b';
-                            text.innerText = 'STATUS: DEEP SEA SLEEP MODE (PAUSED)';
-                            btnStop.classList.add('opacity-50', 'pointer-events-none');
-                            btnStart.classList.remove('opacity-50', 'pointer-events-none');
-                        }
-
-                        // Individual Node UI
-                        for(let i=1; i<=9; i++) {
-                            const nodeId = `node_0${i}`;
-                            const nodeBtn = document.getElementById(`btn-node-0${i}`);
-                            if(nodeBtn) {
-                                const isStart = data[nodeId] === 'START';
-                                nodeBtn.innerText = isStart ? 'ON' : 'OFF';
-                                
-                                // v4.4 Dual-Control Interface Styling
-                                if(isStart) {
-                                    nodeBtn.style.backgroundColor = '#66fcf1';
-                                    nodeBtn.style.color = '#000';
-                                    nodeBtn.style.boxShadow = '0 0 20px rgba(102, 252, 241, 0.6)';
-                                } else {
-                                    nodeBtn.style.backgroundColor = '#1a1a1a';
-                                    nodeBtn.style.color = '#ff4b2b';
-                                    nodeBtn.style.boxShadow = 'inset 0 0 10px rgba(255, 75, 43, 0.2)';
-                                }
-                                nodeBtn.style.borderColor = isStart ? '#66fcf1' : '#ff4b2b';
-                            }
-                        }
-
-                        // [v4.1] 개별 노드 건강상태 체크 (LED 점등)
-                        const healthRes = await fetch('/api/system_health');
-                        const health = await healthRes.json();
-                        Object.keys(health).forEach(node => {
-                            const nodeDot = document.getElementById(`status-${node.replace('_','-')}`);
-                            if(nodeDot) {
-                                if(health[node] === 'ONLINE') {
-                                    nodeDot.style.backgroundColor = '#66fcf1';
-                                    nodeDot.style.boxShadow = '0 0 8px #66fcf1';
-                                } else {
-                                    nodeDot.style.backgroundColor = '#444';
-                                    nodeDot.style.boxShadow = 'none';
-                                }
-                            }
-                        });
-
-                    } catch (e) {
-                        console.error('Status check failed', e);
-                    }
-                }
-
-                async function setSystemState(state, target = 'global') {
-                    try {
-                        const res = await fetch('/api/system_state', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ state: state, target: target })
-                        });
-                        if(res.ok) {
-                            updateStatus();
-                        }
-                    } catch (e) {
-                        alert('상태 변경 실패: ' + e);
-                    }
-                }
-
-                async function toggleNode(nodeId) {
-                    try {
-                        const res = await fetch('/api/system_state');
-                        const data = await res.json();
-                        const newState = data[nodeId] === 'START' ? 'STOP' : 'START';
-                        await setSystemState(newState, nodeId);
-                    } catch (e) { console.error(e); }
-                }
-
-                setInterval(updateStatus, 5000);
-                window.addEventListener('load', updateStatus);
-            </script>
-
-            <!-- 7 Nodes Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 auto-rows-fr">
+            <!-- MAIN GRID -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 
-                <!-- Node 1: 업비트 -->
-                <div class="glass-panel p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.1s;">
-                    <div class="absolute inset-0 bg-gradient-to-br from-red-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-red-600 to-red-400 pointer-events-none"></div>
-                    <a href="https://upbit.1004mas.com" target="_blank" class="flex-grow flex flex-col relative z-10">
-                        <div class="flex items-start justify-between mb-6 relative">
-                            <div class="bg-red-500/20 p-4 rounded-xl text-red-500">
-                                <i class="fab fa-bitcoin text-3xl"></i>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="text-xs font-mono text-gray-500 tracking-wider">NODE 01</span>
-                                <span id="status-node-01" class="w-2 h-2 rounded-full bg-gray-600 mt-1 shadow-[0_0_5px_rgba(0,0,0,0.5)]"></span>
-                            </div>
+                <!-- LEFT COLUMN -->
+                <div class="lg:col-span-5 flex flex-col gap-6">
+                    <!-- 01 MACRO CONTEXT -->
+                    <section class="section-box">
+                        <div class="section-header theme-macro"><span>01 간밤 미 증시 및 거시 경제 (MACRO)</span><span class="section-update-time opacity-70 font-normal text-[9px] lowercase tracking-normal"></span></div>
+                        <div class="section-content" id="macro-content"></div>
+                    </section>
+
+                    <!-- 02 ECONOMIC CALENDAR -->
+                    <section class="section-box">
+                        <div class="section-header theme-calendar"><span>02 주요 일정 및 DART 핵심 공시</span><span class="section-update-time opacity-70 font-normal text-[9px] lowercase tracking-normal"></span></div>
+                        <div class="section-content p-0">
+                            <table class="w-full text-left text-xs"><tbody id="calendar-content"></tbody></table>
                         </div>
-                        <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-red-400 transition-colors">UPBIT RADAR</h2>
-                        <p class="text-gray-400 text-sm flex-grow">원화(KRW) 마켓 김치 프리미엄 및 세력 펌핑 코인 감시망</p>
-                    </a>
-                    <div class="mt-6 flex items-center gap-3 relative z-10">
-                        <a href="https://upbit.1004mas.com" target="_blank" class="flex-grow py-2 px-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-500 text-xs font-bold text-center hover:bg-red-500/20 transition-all">
-                            <i class="fas fa-external-link-alt mr-2"></i> ENTER
-                        </a>
-                        <button onclick="event.preventDefault(); toggleNode('node_01')" id="btn-node-01" class="w-16 py-2 rounded-lg text-[12px] font-black border transition-all shadow-lg">OFF</button>
-                    </div>
+                    </section>
+                    
+                    <!-- 05 BROADER MARKET THEMES -->
+                    <section class="section-box">
+                        <div class="section-header theme-broader"><span>05 주도 테마 및 기관 수급 분석</span><span class="section-update-time opacity-70 font-normal text-[9px] lowercase tracking-normal"></span></div>
+                        <div class="section-content" id="themes-content"></div>
+                    </section>
+                    
+                    <!-- 07 WEEK AHEAD -->
+                    <section class="section-box mb-8">
+                        <div class="section-header theme-week"><span>07 주간 주요 일정 (WEEK AHEAD)</span><span class="section-update-time opacity-70 font-normal text-[9px] lowercase tracking-normal"></span></div>
+                        <div class="section-content p-0">
+                            <table class="w-full text-left text-xs"><tbody id="week-days"></tbody></table>
+                            <div class="p-3" id="week-risk"></div>
+                        </div>
+                    </section>
                 </div>
 
-                <!-- Node 2: 바이비트 -->
-                <div class="glass-panel p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.2s;">
-                    <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-yellow-600 to-yellow-400 pointer-events-none"></div>
-                    <a href="https://crypto.1004mas.com" target="_blank" class="flex-grow flex flex-col relative z-10">
-                        <div class="flex items-start justify-between mb-6 relative">
-                            <div class="bg-yellow-500/20 p-4 rounded-xl text-yellow-500">
-                                <i class="fas fa-chart-line text-3xl"></i>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="text-xs font-mono text-gray-500 tracking-wider">NODE 02</span>
-                                <span id="status-node-02" class="w-2 h-2 rounded-full bg-gray-600 mt-1 shadow-[0_0_5px_rgba(0,0,0,0.5)]"></span>
-                            </div>
-                        </div>
-                        <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-yellow-400 transition-colors">BYBIT RADAR</h2>
-                        <p class="text-gray-400 text-sm flex-grow">글로벌 선물/현물 달러(USDT) 거래대금 폭발 및 청산맵 동향</p>
-                    </a>
-                    <div class="mt-6 flex items-center gap-3 relative z-10">
-                        <a href="https://crypto.1004mas.com" target="_blank" class="flex-grow py-2 px-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-yellow-500 text-xs font-bold text-center hover:bg-yellow-500/20 transition-all">
-                            <i class="fas fa-external-link-alt mr-2"></i> ENTER
-                        </a>
-                        <button onclick="event.preventDefault(); toggleNode('node_02')" id="btn-node-02" class="w-16 py-2 rounded-lg text-[12px] font-black border transition-all shadow-lg">OFF</button>
-                    </div>
-                </div>
+                <!-- RIGHT COLUMN -->
+                <div class="lg:col-span-7 flex flex-col gap-6">
+                    <!-- 03 EARNINGS REPORTS & PREVIEW -->
+                    <section class="section-box">
+                        <div class="section-header theme-earnings"><span>03 실적 발표 및 증권사 리포트 요약</span><span class="section-update-time opacity-70 font-normal text-[9px] lowercase tracking-normal"></span></div>
+                        <div class="section-content" id="earnings-content"></div>
+                    </section>
 
-                <!-- Node 3: 미장 -->
-                <div class="glass-panel p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.3s;">
-                    <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-blue-600 to-blue-400 pointer-events-none"></div>
-                    <a href="https://us.1004mas.com" target="_blank" class="flex-grow flex flex-col relative z-10">
-                        <div class="flex items-start justify-between mb-6 relative">
-                            <div class="bg-blue-500/20 p-4 rounded-xl text-blue-500">
-                                <i class="fas fa-globe-americas text-3xl"></i>
+                    <!-- 04 TOP MOVERS & CATALYSTS -->
+                    <section class="section-box">
+                        <div class="section-header theme-movers"><span>04 시간외 급등락 및 주도주 동향</span><span class="section-update-time opacity-70 font-normal text-[9px] lowercase tracking-normal"></span></div>
+                        <div class="p-0">
+                            <!-- LONGS -->
+                            <div class="bg-gray-900/50 px-4 py-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-gray-800 flex items-center gap-1">
+                                <i class="fas fa-caret-up text-green-500"></i> 상승 및 주도주 (LONGS)
                             </div>
-                            <div class="flex flex-col items-end">
-                                <span class="text-xs font-mono text-gray-500 tracking-wider">NODE 03</span>
-                                <span id="status-node-03" class="w-2 h-2 rounded-full bg-gray-600 mt-1 shadow-[0_0_5px_rgba(0,0,0,0.5)]"></span>
-                            </div>
-                        </div>
-                        <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">US STOCKS</h2>
-                        <p class="text-gray-400 text-sm flex-grow">나스닥 및 월스트리트 빅테크 AI 외신 팩트 체크망 (Firecrawl)</p>
-                    </a>
-                    <div class="mt-6 flex items-center gap-3 relative z-10">
-                        <a href="https://us.1004mas.com" target="_blank" class="flex-grow py-2 px-4 bg-blue-500/10 border border-blue-500/30 rounded-lg text-blue-500 text-xs font-bold text-center hover:bg-blue-500/20 transition-all">
-                            <i class="fas fa-external-link-alt mr-2"></i> ENTER
-                        </a>
-                        <button onclick="event.preventDefault(); toggleNode('node_03')" id="btn-node-03" class="w-16 py-2 rounded-lg text-[12px] font-black border transition-all shadow-lg">OFF</button>
-                    </div>
-                </div>
+                            <table class="w-full text-xs text-left"><tbody id="movers-longs"></tbody></table>
 
-                <!-- Node 4: 한국장 (Cloudflare Tunnel) -->
-                <div class="glass-panel p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.4s;">
-                    <div class="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-orange-600 to-orange-400 pointer-events-none"></div>
-                    <a href="https://krx.1004mas.com" target="_blank" class="flex-grow flex flex-col relative z-10">
-                        <div class="flex items-start justify-between mb-6 relative">
-                            <div class="bg-orange-500/20 p-4 rounded-xl text-orange-500">
-                                <i class="fas fa-won-sign text-3xl"></i>
+                            <!-- SHORTS -->
+                            <div class="bg-gray-900/50 px-4 py-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest border-y border-gray-800 flex items-center gap-1 mt-2">
+                                <i class="fas fa-caret-down text-red-500"></i> 하락 및 악재주 (SHORTS)
                             </div>
-                            <div class="flex flex-col items-end">
-                                <span class="text-xs font-mono text-gray-500 tracking-wider">NODE 04</span>
-                                <span id="status-node-04" class="w-2 h-2 rounded-full bg-gray-600 mt-1 shadow-[0_0_5px_rgba(0,0,0,0.5)]"></span>
-                            </div>
+                            <table class="w-full text-xs text-left"><tbody id="movers-shorts"></tbody></table>
                         </div>
-                        <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-orange-400 transition-colors">KRX RADAR</h2>
-                        <p class="text-gray-400 text-sm flex-grow">한국투자증권(KIS) 코스피/코스닥 체결강도 및 호가창 방어선</p>
-                    </a>
-                    <div class="mt-6 flex items-center gap-3 relative z-10">
-                        <a href="https://krx.1004mas.com" target="_blank" class="flex-grow py-2 px-4 bg-orange-500/10 border border-orange-500/30 rounded-lg text-orange-500 text-xs font-bold text-center hover:bg-orange-500/20 transition-all">
-                            <i class="fas fa-external-link-alt mr-2"></i> ENTER
-                        </a>
-                        <button onclick="event.preventDefault(); toggleNode('node_04')" id="btn-node-04" class="w-16 py-2 rounded-lg text-[12px] font-black border transition-all shadow-lg">OFF</button>
-                    </div>
-                </div>
-
-                <!-- Node 5: 유튜브 공장 -->
-                <div class="glass-panel p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.5s;">
-                    <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-purple-600 to-purple-400 pointer-events-none"></div>
-                    <a href="https://youtube.1004mas.com" target="_blank" class="flex-grow flex flex-col relative z-10">
-                        <div class="flex items-start justify-between mb-6 relative">
-                            <div class="bg-purple-500/20 p-4 rounded-xl text-purple-500">
-                                <i class="fab fa-youtube text-3xl"></i>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="text-xs font-mono text-gray-500 tracking-wider">NODE 05</span>
-                                <span id="status-node-05" class="w-2 h-2 rounded-full bg-gray-600 mt-1 shadow-[0_0_5px_rgba(0,0,0,0.5)]"></span>
-                            </div>
+                    </section>
+                    
+                    <!-- 06 SECONDARY NAMES & FRESH CATALYSTS -->
+                    <section class="section-box mb-8">
+                        <div class="section-header theme-secondary"><span>06 관심 종목군 및 찌라시 (SECONDARY NAMES)</span><span class="section-update-time opacity-70 font-normal text-[9px] lowercase tracking-normal"></span></div>
+                        <div class="p-0">
+                            <table class="w-full text-xs text-left"><tbody id="secondary-content"></tbody></table>
                         </div>
-                        <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-purple-400 transition-colors">YOUTUBE FACTORY</h2>
-                        <p class="text-gray-400 text-sm flex-grow">글로벌 무인 다큐멘터리 채널 4개 자동화 렌더링 서버 상태</p>
-                    </a>
-                    <div class="mt-6 flex items-center gap-3 relative z-10">
-                        <a href="https://youtube.1004mas.com" target="_blank" class="flex-grow py-2 px-4 bg-purple-500/10 border border-purple-500/30 rounded-lg text-purple-500 text-xs font-bold text-center hover:bg-purple-500/20 transition-all">
-                            <i class="fas fa-external-link-alt mr-2"></i> ENTER
-                        </a>
-                        <button onclick="event.preventDefault(); toggleNode('node_05')" id="btn-node-05" class="w-16 py-2 rounded-lg text-[12px] font-black border transition-all shadow-lg">OFF</button>
-                    </div>
-                </div>
+                    </section>
 
-                <!-- Node 6: 스마트 비딩 -->
-                <div class="glass-panel p-6 md:p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.6s;">
-                    <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-emerald-600 to-emerald-400 pointer-events-none"></div>
-                    <a href="https://bidding.1004mas.com" target="_blank" class="flex-grow flex flex-col relative z-10">
-                        <div class="flex items-start justify-between mb-4 md:mb-6 relative">
-                            <div class="bg-emerald-500/20 p-3 md:p-4 rounded-xl text-emerald-500">
-                                <i class="fas fa-gavel text-2xl md:text-3xl"></i>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="text-[10px] md:text-xs font-mono text-gray-500 tracking-wider">NODE 06</span>
-                                <span id="status-node-06" class="w-2 h-2 rounded-full bg-gray-600 mt-1 shadow-[0_0_5px_rgba(0,0,0,0.5)]"></span>
-                            </div>
+                    <!-- 08 AFTER MARKET REVIEW -->
+                    <section class="section-box mb-8 hidden" id="after-market-container">
+                        <div class="section-header theme-movers" style="background-color:#4a044e; color:#f0abfc;">
+                            <span><i class="fas fa-moon mr-1"></i> 08 장 마감 자동 정산 (AFTER MARKET REVIEW)</span>
+                            <span class="section-update-time opacity-70 font-normal text-[9px] lowercase tracking-normal"></span>
                         </div>
-                        <h2 class="text-xl md:text-2xl font-bold text-white mb-2 group-hover:text-emerald-400 transition-colors">SMART BIDDING</h2>
-                        <p class="text-gray-400 text-xs md:text-sm flex-grow">국가 조달청 G2B 입찰 감시 및 고객사 외주 계약 수주 방어망</p>
-                    </a>
-                    <div class="mt-6 flex items-center gap-3 relative z-10">
-                        <a href="https://bidding.1004mas.com" target="_blank" class="flex-grow py-2 px-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-emerald-500 text-xs font-bold text-center hover:bg-emerald-500/20 transition-all">
-                            <i class="fas fa-external-link-alt mr-2"></i> ENTER
-                        </a>
-                        <button onclick="event.preventDefault(); toggleNode('node_06')" id="btn-node-06" class="w-16 py-2 rounded-lg text-[12px] font-black border transition-all shadow-lg">OFF</button>
-                    </div>
-                </div>
-
-                <!-- Node 7: 야간 코스피 선물 -->
-                <div class="glass-panel p-6 md:p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.7s;">
-                    <div class="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-pink-600 to-pink-400 pointer-events-none"></div>
-                    <a href="https://night.1004mas.com" target="_blank" class="flex-grow flex flex-col relative z-10">
-                        <div class="flex items-start justify-between mb-4 md:mb-6 relative">
-                            <div class="bg-pink-500/20 p-3 md:p-4 rounded-xl text-pink-500">
-                                <i class="fas fa-moon text-2xl md:text-3xl"></i>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="text-[10px] md:text-xs font-mono text-gray-500 tracking-wider">NODE 07</span>
-                                <span id="status-node-07" class="w-2 h-2 rounded-full bg-gray-600 mt-1 shadow-[0_0_5px_rgba(0,0,0,0.5)]"></span>
-                            </div>
+                        <div class="section-content bg-[#1e1b4b]/30">
+                            <pre id="after-market-content" class="text-xs text-gray-300 font-mono whitespace-pre-wrap overflow-x-auto leading-relaxed"></pre>
                         </div>
-                        <h2 class="text-xl md:text-2xl font-bold text-white mb-2 group-hover:text-pink-400 transition-colors">NIGHT SUPREME</h2>
-                        <p class="text-gray-400 text-xs md:text-sm flex-grow">코스피 200 야간 선물 및 미증시 매크로 외인 롤오버 추적망</p>
-                    </a>
-                    <div class="mt-6 flex items-center gap-3 relative z-10">
-                        <a href="https://night.1004mas.com" target="_blank" class="flex-grow py-2 px-4 bg-pink-500/10 border border-pink-500/30 rounded-lg text-pink-500 text-xs font-bold text-center hover:bg-pink-500/20 transition-all">
-                            <i class="fas fa-external-link-alt mr-2"></i> ENTER
-                        </a>
-                        <button onclick="event.preventDefault(); toggleNode('node_07')" id="btn-node-07" class="w-16 py-2 rounded-lg text-[12px] font-black border transition-all shadow-lg">OFF</button>
-                    </div>
+                    </section>
                 </div>
+            </div>
+            
+            <footer class="text-center text-[10px] text-gray-600 mt-4">
+                본 브리핑은 n8n 자동화 파이프라인이 수집한 글로벌 및 국내 증시 데이터를 기반으로 AI가 작성한 것입니다. 투자 판단의 최종 책임은 투자자 본인에게 있습니다.
+            </footer>
+        </main>
+    </div>
 
-                <!-- Node 8: KRX Sector Sniper (Heatmap) -->
-                <div class="glass-panel p-6 md:p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.8s;">
-                    <div class="absolute inset-0 bg-gradient-to-br from-teal-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-teal-600 to-cyan-400 pointer-events-none"></div>
-                    <a href="https://krx.1004mas.com/krxmap/" target="_blank" class="flex-grow flex flex-col relative z-10">
-                        <div class="flex items-start justify-between mb-4 md:mb-6 relative">
-                            <div class="bg-teal-500/20 p-3 md:p-4 rounded-xl text-teal-400">
-                                <i class="fas fa-th-large text-2xl md:text-3xl"></i>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="text-[10px] md:text-xs font-mono text-gray-500 tracking-wider">NODE 08</span>
-                                <span id="status-node-08" class="w-2 h-2 rounded-full bg-gray-600 mt-1 shadow-[0_0_5px_rgba(0,0,0,0.5)]"></span>
-                            </div>
-                        </div>
-                        <h2 class="text-xl md:text-2xl font-bold text-white mb-2 group-hover:text-teal-400 transition-colors">SECTOR SNIPER</h2>
-                        <p class="text-gray-400 text-xs md:text-sm flex-grow">섹터별 거래대금 30억+ 히트맵. 9대 테마 자금 유입 실시간 추적망</p>
-                    </a>
-                    <div class="mt-6 flex items-center gap-3 relative z-10">
-                        <a href="https://krx.1004mas.com/krxmap/" target="_blank" class="flex-grow py-2 px-4 bg-teal-500/10 border border-teal-500/30 rounded-lg text-teal-400 text-xs font-bold text-center hover:bg-teal-500/20 transition-all">
-                            <i class="fas fa-external-link-alt mr-2"></i> ENTER
-                        </a>
-                        <button onclick="event.preventDefault(); toggleNode('node_08')" id="btn-node-08" class="w-16 py-2 rounded-lg text-[12px] font-black border transition-all shadow-lg">OFF</button>
-                    </div>
+    <!-- 1-YEAR ROTATION MODAL -->
+    <div id="rotation-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex justify-center items-center p-4 backdrop-blur-sm">
+        <div class="bg-[#0b0f19] border border-gray-700 rounded-lg w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl">
+            <div class="flex justify-between items-center p-4 border-b border-gray-800">
+                <h2 class="text-base font-bold text-white"><i class="fas fa-history text-purple-400 mr-2"></i>최근 1년 KRX 섹터 로테이션 (25.04 ~ 26.04)</h2>
+                <button onclick="document.getElementById('rotation-modal').classList.add('hidden')" class="text-gray-400 hover:text-white transition-colors cursor-pointer">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="p-4 overflow-y-auto flex flex-col gap-3">
+                <div class="text-xs text-gray-500 mb-2 bg-gray-900/50 p-3 rounded border border-gray-800">
+                    <i class="fas fa-lightbulb text-yellow-500 mr-1"></i> 한국 증시는 철저한 '내러티브(명분)와 수급'에 의해 섹터별 순환매가 일어납니다. 주 단위의 세밀한 움직임을 4개의 거대한 유동성 국면으로 압축했습니다. <strong>각 항목을 클릭하여 세부 내용을 확인하세요.</strong>
                 </div>
-
-                <!-- Node 9: Morning Rundown -->
-                <div class="glass-panel p-6 md:p-8 group relative overflow-hidden flex flex-col h-full fade-in" style="animation-delay: 0.9s;">
-                    <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                    <div class="h-2 w-full absolute top-0 left-0 bg-gradient-to-r from-indigo-600 to-indigo-400 pointer-events-none"></div>
-                    <a href="https://krxm.1004mas.com" target="_blank" class="flex-grow flex flex-col relative z-10">
-                        <div class="flex items-start justify-between mb-4 md:mb-6 relative">
-                            <div class="bg-indigo-500/20 p-3 md:p-4 rounded-xl text-indigo-400">
-                                <i class="fas fa-sun text-2xl md:text-3xl"></i>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="text-[10px] md:text-xs font-mono text-gray-500 tracking-wider">NODE 09</span>
-                                <span id="status-node-09" class="w-2 h-2 rounded-full bg-gray-600 mt-1 shadow-[0_0_5px_rgba(0,0,0,0.5)]"></span>
-                            </div>
-                        </div>
-                        <h2 class="text-xl md:text-2xl font-bold text-white mb-2 group-hover:text-indigo-400 transition-colors">MORNING RUNDOWN</h2>
-                        <p class="text-gray-400 text-xs md:text-sm flex-grow">제갈의 아침 브리핑. 노트북LM 및 AI가 분석한 당일 작전 시나리오와 전략 요약</p>
-                    </a>
-                    <div class="mt-6 flex items-center gap-3 relative z-10">
-                        <a href="https://krxm.1004mas.com" target="_blank" class="flex-grow py-2 px-4 bg-indigo-500/10 border border-indigo-500/30 rounded-lg text-indigo-400 text-xs font-bold text-center hover:bg-indigo-500/20 transition-all">
-                            <i class="fas fa-external-link-alt mr-2"></i> ENTER
-                        </a>
-                        <button onclick="event.preventDefault(); toggleNode('node_09')" id="btn-node-09" class="w-16 py-2 rounded-lg text-[12px] font-black border transition-all shadow-lg">OFF</button>
+                
+                <details class="bg-gray-800/40 border border-gray-700 rounded-md group">
+                    <summary class="p-3 font-semibold text-gray-200 cursor-pointer hover:bg-gray-800/80 flex justify-between items-center transition-colors">
+                        <span>🌊 Phase 1: AI의 개화와 인프라 폭발 (25.2Q~3Q)</span>
+                        <i class="fas fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform"></i>
+                    </summary>
+                    <div class="p-4 border-t border-gray-700 text-xs md:text-sm text-gray-300 leading-relaxed">
+                        <p class="mb-2"><strong class="text-blue-400">주도 섹터:</strong> 반도체(HBM), 전력기기, 전선</p>
+                        <p class="mb-3">엔비디아(NVDA) 실적 서프라이즈로 외국인 자금이 코스피 대형 반도체로 블랙홀처럼 빨려 들어간 시기입니다.</p>
+                        <ul class="list-disc pl-5 space-y-1.5 text-gray-400">
+                            <li><strong class="text-white">SK하이닉스, 한미반도체:</strong> HBM 독점 지위로 52주 신고가 연속 경신.</li>
+                            <li><strong class="text-white">HD현대일렉트릭, LS일렉트릭:</strong> AI 데이터센터 전력 부족 논리로 시장 장악.</li>
+                            <li><span class="text-red-400">자금 이탈:</span> 2차전지 (캐즘 우려로 소외)</li>
+                        </ul>
                     </div>
-                </div>
+                </details>
 
+                <details class="bg-gray-800/40 border border-gray-700 rounded-md group">
+                    <summary class="p-3 font-semibold text-gray-200 cursor-pointer hover:bg-gray-800/80 flex justify-between items-center transition-colors">
+                        <span>🏦 Phase 2: 저PBR 밸류업과 K-수출 전성시대 (25.4Q)</span>
+                        <i class="fas fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform"></i>
+                    </summary>
+                    <div class="p-4 border-t border-gray-700 text-xs md:text-sm text-gray-300 leading-relaxed">
+                        <p class="mb-2"><strong class="text-blue-400">주도 섹터:</strong> 금융(은행/지주), 자동차, 화장품, 음식료</p>
+                        <p class="mb-3">정부 주도의 '기업 밸류업 프로그램'으로 만년 소외주(저PBR)에 수급이 쏠렸으며, K-브랜드 수출 데이터가 퀀텀 점프를 기록했습니다.</p>
+                        <ul class="list-disc pl-5 space-y-1.5 text-gray-400">
+                            <li><strong class="text-white">KB금융, 현대차:</strong> 강력한 자사주 소각과 배당 확대로 외국인/기관 쌍끌이 매수.</li>
+                            <li><strong class="text-white">실리콘투, 삼양식품:</strong> 매월 15일 발표되는 관세청 수출입 데이터에서 미국향 매출 폭증.</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details class="bg-gray-800/40 border border-gray-700 rounded-md group">
+                    <summary class="p-3 font-semibold text-gray-200 cursor-pointer hover:bg-gray-800/80 flex justify-between items-center transition-colors">
+                        <span>🧬 Phase 3: 금리 인하 기대감과 지정학적 방산 (26.1Q)</span>
+                        <i class="fas fa-chevron-down text-gray-500 group-open:rotate-180 transition-transform"></i>
+                    </summary>
+                    <div class="p-4 border-t border-gray-700 text-xs md:text-sm text-gray-300 leading-relaxed">
+                        <p class="mb-2"><strong class="text-blue-400">주도 섹터:</strong> 제약/바이오, 방위산업</p>
+                        <p class="mb-3">미 연준의 금리 인하 기대감으로 제약/바이오에 숏커버링이 들어오고, 중동/동유럽 불안으로 K-방산 수주가 터졌습니다.</p>
+                        <ul class="list-disc pl-5 space-y-1.5 text-gray-400">
+                            <li><strong class="text-white">알테오젠, HLB:</strong> 라이선스 아웃(L/O) 및 FDA 신약 승인 모멘텀으로 코스닥 지수 견인.</li>
+                            <li><strong class="text-white">한화에어로스페이스:</strong> 루마니아, 폴란드 등 동유럽 추가 수주로 방산 슈퍼사이클 증명.</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details class="bg-gray-800/40 border border-[#c8aa6e]/50 rounded-md group" open>
+                    <summary class="p-3 font-bold text-[#c8aa6e] cursor-pointer hover:bg-gray-800/80 flex justify-between items-center transition-colors">
+                        <span>⚡ Phase 4: 현재 - AI 반등과 에너지 패러다임 (26.2Q ~ 현재)</span>
+                        <i class="fas fa-chevron-down text-[#c8aa6e] group-open:rotate-180 transition-transform"></i>
+                    </summary>
+                    <div class="p-4 border-t border-gray-700 text-xs md:text-sm text-gray-300 leading-relaxed">
+                        <p class="mb-2"><strong class="text-yellow-400">주도 섹터:</strong> 반도체(B200 밸류체인), 원자력 발전, 전력 인프라 2차 랠리</p>
+                        <p class="mb-3">조정을 받던 AI 섹터가 엔비디아 차세대 칩(B200) 양산 소식과 함께 주도권을 되찾았으며, AI 전력 부족의 해답으로 '원전'이 테마화되었습니다.</p>
+                        <ul class="list-disc pl-5 space-y-1.5 text-gray-400">
+                            <li><strong class="text-white">두산에너빌리티, 서전기전:</strong> 체코 원전 수주 임박설 및 '대통령실 에너지 고속도로' 발언으로 뜨거운 거래대금 형성.</li>
+                            <li><strong class="text-white">유리기판 테마:</strong> HBM 이후 차세대 반도체 패키징 기술로 새로운 내러티브 형성.</li>
+                        </ul>
+                    </div>
+                </details>
             </div>
         </div>
     </div>
+
+    <!-- ZHUGE SEARCH MODAL -->
+    <div id="zhuge-search-modal" class="fixed inset-0 bg-black/95 backdrop-blur-xl hidden z-50 flex flex-col items-center justify-center p-2 md:p-6">
+        <div class="bg-[#0f172a] border border-blue-900/50 rounded-xl shadow-2xl w-full max-w-6xl overflow-hidden relative flex flex-col max-h-[95vh] h-[95vh]">
+            <button onclick="document.getElementById('zhuge-search-modal').classList.add('hidden')" class="absolute top-4 right-6 text-gray-400 hover:text-white z-50 bg-black/50 rounded-full w-8 h-8 flex items-center justify-center">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <div class="p-4 md:p-6 flex-1 flex flex-col min-h-0">
+                <div class="flex items-center gap-3 mb-1">
+                    <i class="fas fa-crosshairs text-blue-400 text-xl animate-pulse"></i>
+                    <h2 id="search-modal-title" class="text-xl md:text-3xl font-bold text-white tracking-tight">군단 수집 중...</h2>
+                </div>
+                <p id="search-modal-status" class="text-xs text-blue-300 mb-4 tracking-widest uppercase font-bold">Deploying 1004MAS Tactical Agents...</p>
+                
+                <!-- TradingView Widget Container -->
+                <div id="tv_chart_container" class="w-full flex-1 bg-[#0b0f19] rounded-lg border border-gray-800 mb-4 flex items-center justify-center text-gray-600 hidden min-h-[400px]">
+                    <!-- Widget goes here -->
+                </div>
+
+                <div id="search-modal-links" class="flex flex-col gap-3 hidden">
+                    <a id="link-tradingview-direct" href="#" target="_blank" class="flex items-center justify-center bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-4 rounded-lg transition-all shadow-[0_0_15px_rgba(37,99,235,0.4)]">
+                        <i class="fas fa-rocket mr-2"></i> 트레이딩뷰 프리미엄 (웹/앱)으로 딥 다이브
+                    </a>
+                    
+                    <div class="grid grid-cols-2 gap-3 mt-2">
+                        <a id="link-naver" href="#" target="_blank" class="flex items-center justify-center gap-2 bg-[#1e293b] hover:bg-[#2dd4bf]/20 border border-[#1e293b] hover:border-[#2dd4bf]/50 p-3 rounded-lg transition-all group text-gray-300 text-xs font-bold">
+                            <i class="fas fa-chart-line text-[#2dd4bf]"></i> 네이버 호가/수급
+                        </a>
+                        <a id="link-youtube" href="#" target="_blank" class="flex items-center justify-center gap-2 bg-[#1e293b] hover:bg-[#ef4444]/20 border border-[#1e293b] hover:border-[#ef4444]/50 p-3 rounded-lg transition-all group text-gray-300 text-xs font-bold">
+                            <i class="fab fa-youtube text-[#ef4444]"></i> 유튜브 심층 보고서
+                        </a>
+                        <a id="link-fnguide" href="#" target="_blank" class="flex items-center justify-center gap-2 bg-[#1e293b] hover:bg-[#f59e0b]/20 border border-[#1e293b] hover:border-[#f59e0b]/50 p-3 rounded-lg transition-all group text-gray-300 text-xs font-bold col-span-2">
+                            <i class="fas fa-file-invoice-dollar text-[#f59e0b]"></i> FnGuide / DART 공시 통합 분석
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Zhuge Search Logic
+        function handleZhugeSearch(event) {
+            if (event.key === 'Enter') {
+                executeZhugeSearch();
+            }
+        }
+
+        async function executeZhugeSearch() {
+            const query = document.getElementById('zhuge-search-input').value.trim();
+            if (!query) return;
+            
+            const modal = document.getElementById('zhuge-search-modal');
+            const title = document.getElementById('search-modal-title');
+            const status = document.getElementById('search-modal-status');
+            const tvContainer = document.getElementById('tv_chart_container');
+            const linksContainer = document.getElementById('search-modal-links');
+            
+            // Reset state
+            title.textContent = `[${query}] 전술 데이터 수집 중...`;
+            status.textContent = "Deploying 1004MAS Agents... (DART, TV, Naver)";
+            tvContainer.classList.add('hidden');
+            tvContainer.innerHTML = ''; // Clear previous widget
+            linksContainer.classList.add('hidden');
+            modal.classList.remove('hidden');
+
+            try {
+                // Fetch Tactical Intel from Backend Command Center
+                const response = await fetch(`/api/tactical_intel?query=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                title.textContent = `${data.ticker_name} ${data.ticker_code ? '('+data.ticker_code+')' : ''}`;
+                status.textContent = data.ai_summary || "Zhuge 군단 수집 완료";
+
+                // Set URLs dynamically
+                document.getElementById('link-naver').href = data.naver_finance_url;
+                document.getElementById('link-tradingview-direct').href = data.tradingview_direct_url;
+                document.getElementById('link-youtube').href = data.youtube_url;
+                document.getElementById('link-fnguide').href = data.fnguide_url;
+
+                // Load TradingView Widget if symbol exists
+                if (data.tradingview_symbol) {
+                    tvContainer.classList.remove('hidden');
+                    
+                    // We directly initialize the widget since tv.js is loaded in the <head>
+                    if (window.TradingView) {
+                        new TradingView.widget({
+                            "autosize": true,
+                            "symbol": data.tradingview_symbol,
+                            "interval": "D",
+                            "timezone": "Asia/Seoul",
+                            "theme": "dark",
+                            "style": "1",
+                            "locale": "kr",
+                            "enable_publishing": false,
+                            "allow_symbol_change": true,
+                            "details": true,
+                            "hotlist": true,
+                            "calendar": true,
+                            "withdateranges": true,
+                            "hide_top_toolbar": false,
+                            "hide_legend": false,
+                            "save_image": true,
+                            "studies": [
+                                "Volume@tv-basicstudies",
+                                "MACD@tv-basicstudies",
+                                "RSI@tv-basicstudies"
+                            ],
+                            "container_id": "tv_chart_container",
+                            "toolbar_bg": "#0f172a"
+                        });
+                    } else {
+                        tvContainer.innerHTML = '<div class="text-sm text-red-500">트레이딩뷰 스크립트를 로드할 수 없습니다.</div>';
+                    }
+                } else {
+                    // Fallback if symbol not found
+                    tvContainer.classList.remove('hidden');
+                    tvContainer.innerHTML = '<div class="text-sm text-gray-500">종목 코드를 특정할 수 없습니다.<br>하단의 외부 링크를 이용해 주십시오.</div>';
+                }
+                
+                linksContainer.classList.remove('hidden');
+            } catch (error) {
+                console.error("Intel gathering failed", error);
+                title.textContent = "수집 실패";
+                status.textContent = "사령부(서버) 응답이 지연되거나 네트워크에 문제가 있습니다.";
+                linksContainer.classList.remove('hidden'); // Show links anyway so they can manual search
+            }
+        }
+
+        function copyForNotebookLM() {
+            let textToCopy = "==== 1004MAS KRX 일일 시황 요약 (NotebookLM 용) ====\n\n";
+            
+            // 01 MACRO
+            textToCopy += "■ 01 간밤 미 증시 및 거시 경제 (MACRO)\n";
+            const macro = document.getElementById('macro-content');
+            if(macro) textToCopy += macro.innerText + "\n\n";
+            
+            // 02 CALENDAR
+            textToCopy += "■ 02 주요 일정 및 DART 핵심 공시\n";
+            const cal = document.getElementById('calendar-content');
+            if(cal) textToCopy += cal.innerText + "\n\n";
+
+            // 03 EARNINGS
+            textToCopy += "■ 03 실적 발표 및 증권사 리포트 요약\n";
+            const earn = document.getElementById('earnings-content');
+            if(earn) textToCopy += earn.innerText + "\n\n";
+
+            // 04 MOVERS
+            textToCopy += "■ 04 시간외 급등락 및 주도주 동향\n";
+            const longs = document.getElementById('movers-longs');
+            if(longs) textToCopy += "[상승 및 주도주]\n" + longs.innerText + "\n\n";
+            const shorts = document.getElementById('movers-shorts');
+            if(shorts) textToCopy += "[하락 및 악재주]\n" + shorts.innerText + "\n\n";
+
+            // 05 THEMES
+            textToCopy += "■ 05 주도 테마 및 기관 수급 분석\n";
+            const themes = document.getElementById('themes-content');
+            if(themes) textToCopy += themes.innerText + "\n\n";
+
+            // 06 SECONDARY
+            textToCopy += "■ 06 2차 전지 및 틈새 섹터\n";
+            const sec = document.getElementById('secondary-content');
+            if(sec) textToCopy += sec.innerText + "\n\n";
+
+            // 07 WEEK
+            textToCopy += "■ 07 주간 주요 일정 (WEEK AHEAD)\n";
+            const week = document.getElementById('week-days');
+            if(week) textToCopy += week.innerText + "\n\n";
+            const risk = document.getElementById('week-risk');
+            if(risk) textToCopy += risk.innerText + "\n\n";
+
+            // 08 AFTER MARKET (장 마감 자동 정산)
+            const amContainer = document.getElementById('after-market-container');
+            const amContent = document.getElementById('after-market-content');
+            if (amContainer && !amContainer.classList.contains('hidden') && amContent) {
+                textToCopy += "■ 08 장 마감 자동 정산 (AFTER MARKET REVIEW)\n";
+                textToCopy += amContent.innerText + "\n\n";
+            }
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert("NotebookLM용 텍스트(01~08)가 클립보드에 복사되었습니다.\nNotebookLM 소스 업로드 창에 붙여넣기(Ctrl+V) 하십시오.");
+            }).catch(err => {
+                alert("클립보드 복사 실패: " + err);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const archive = window.krxArchive;
+            if (!archive || Object.keys(archive).length === 0) {
+                document.getElementById('render-date').textContent = '데이터베이스 로딩 실패';
+                return;
+            }
+
+            const dates = Object.keys(archive); // 최신순으로 정렬되어 있다고 가정 (파이썬에서 처리함)
+            const dateListContainer = document.getElementById('date-list');
+            
+            // 날짜 포맷 변환 함수 (YYYY-MM-DD -> M/D)
+            const formatShortDate = (dateStr) => {
+                const parts = dateStr.split('-');
+                if (parts.length === 3) return `${parseInt(parts[1])}/${parseInt(parts[2])}`;
+                return dateStr;
+            };
+
+            // 사이드바 날짜 버튼 생성
+            dates.forEach((dateKey, index) => {
+                const btn = document.createElement('div');
+                btn.className = `date-btn ${index === 0 ? 'active' : ''}`;
+                btn.textContent = formatShortDate(dateKey);
+                btn.dataset.date = dateKey;
+                btn.onclick = () => {
+                    // UI 액티브 상태 변경
+                    document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    // 해당 날짜 데이터 로드
+                    loadRundown(dateKey);
+                };
+                dateListContainer.appendChild(btn);
+            });
+
+            // 초기 로드는 가장 최신 날짜로 실행
+            loadRundown(dates[0]);
+
+            function loadRundown(dateKey) {
+                const data = archive[dateKey];
+                if (!data) return;
+
+                document.getElementById('render-date').textContent = data.date || dateKey;
+
+                // 0. TLDR
+                const tldrContainer = document.getElementById('tldr-container');
+                if (data.tldr) {
+                    document.getElementById('tldr-content').textContent = data.tldr;
+                    tldrContainer.classList.remove('hidden');
+                } else {
+                    tldrContainer.classList.add('hidden');
+                }
+
+                // 1. Top Stats
+                const statsContainer = document.getElementById('top-stats-container');
+                statsContainer.innerHTML = '';
+                if(data.top_stats) {
+                    for (const [key, stat] of Object.entries(data.top_stats)) {
+                        const isAlert = stat.alert === true;
+                        const colorClass = isAlert ? 'text-red-400 animate-pulse font-bold' : (stat.trend === 'up' ? 'percent-up' : 'percent-down');
+                        const icon = isAlert ? 'fa-exclamation-triangle' : (stat.trend === 'up' ? 'fa-caret-up' : 'fa-caret-down');
+                        const bgClass = isAlert ? 'bg-red-900/30 px-2 py-1 rounded border border-red-500/30 -ml-2 -mt-1' : '';
+                        const titleColor = isAlert ? 'text-red-300 font-bold' : 'text-gray-500';
+                        const descColor = isAlert ? 'text-red-300' : 'text-gray-500';
+                        
+                        statsContainer.innerHTML += `
+                            <div class="flex flex-col ${bgClass}">
+                                <span class="${titleColor} mb-1">${key}</span>
+                                <span class="${colorClass}"><i class="fas ${icon}"></i> ${stat.value} <span class="${descColor} text-[9px] font-normal ml-1">${stat.desc}</span></span>
+                            </div>
+                        `;
+                    }
+                }
+
+                // 2. Macro
+                if(data.sections.macro) {
+                    let macroHtml = `<p class="text-gray-300 font-medium mb-4 leading-relaxed">${data.sections.macro.summary || ''}</p>`;
+                    (data.sections.macro.bullets || []).forEach(b => {
+                        macroHtml += `<div class="bullet-item"><span class="bullet-arrow"></span><div><span class="text-white font-semibold">${b.title}</span> ${b.text}</div></div>`;
+                    });
+                    document.getElementById('macro-content').innerHTML = macroHtml;
+                }
+
+                // 3. Calendar
+                if(data.sections.calendar) {
+                    let calHtml = '';
+                    data.sections.calendar.forEach((c, idx) => {
+                        const isFirst = idx === 0;
+                        calHtml += `
+                            <tr class="border-b border-gray-800">
+                                <td class="p-3 w-28 align-top ${isFirst ? 'text-gray-500 font-semibold' : 'text-white font-bold'}">${c.day}</td>
+                                <td class="p-3 text-gray-300">${c.events}</td>
+                            </tr>
+                        `;
+                    });
+                    document.getElementById('calendar-content').innerHTML = calHtml;
+                }
+
+                // 4. Earnings
+                if(data.sections.earnings) {
+                    let earnHtml = `<p class="text-gray-300 font-medium mb-4 leading-relaxed">${data.sections.earnings.summary || ''}</p>`;
+                    (data.sections.earnings.bullets || []).forEach(b => {
+                        earnHtml += `<div class="bullet-item"><span class="bullet-arrow"></span><div><span class="text-white font-semibold">${b.title}</span> ${b.text}</div></div>`;
+                    });
+                    document.getElementById('earnings-content').innerHTML = earnHtml;
+                }
+
+                // 5. Themes
+                if(data.sections.themes) {
+                    let themeHtml = `<div class="grid grid-cols-2 gap-4 border-b border-gray-800 pb-4 mb-4">`;
+                    (data.sections.themes.stats || []).forEach(s => {
+                        themeHtml += `<div><div class="text-[10px] text-gray-500 font-bold tracking-wider mb-1 uppercase">${s.title}</div><div class="text-xl font-bold text-white">${s.value}</div><div class="text-xs text-gray-400 mt-1">${s.desc}</div></div>`;
+                    });
+                    themeHtml += `</div>`;
+                    (data.sections.themes.bullets || []).forEach(b => {
+                        themeHtml += `<div class="bullet-item"><span class="bullet-arrow"></span><div><span class="text-white font-semibold">${b.title}</span> ${b.text}</div></div>`;
+                    });
+                    document.getElementById('themes-content').innerHTML = themeHtml;
+                }
+
+                // 6. Movers (Longs/Shorts)
+                if(data.sections.movers) {
+                    let longsHtml = '';
+                    (data.sections.movers.longs || []).forEach(m => {
+                        const rvolHtml = m.rvol ? `<span class="px-2 py-1 rounded text-[9px] font-bold tracking-wider badge-blue mt-1 inline-block whitespace-nowrap">${m.rvol}</span>` : '';
+                        const squeezeHtml = m.squeeze ? `<span class="px-2 py-1 rounded text-[9px] font-bold tracking-wider bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 mt-1 inline-block whitespace-nowrap animate-pulse"><i class="fas fa-crosshairs mr-1"></i>숏 스퀴즈</span>` : '';
+                        longsHtml += `
+                            <tr class="border-b border-gray-800 hover:bg-gray-800/30 transition-colors">
+                                <td class="p-3 w-20 align-top ticker-highlight">${m.ticker}</td>
+                                <td class="p-3 w-16 align-top percent-up font-bold">${m.percent}</td>
+                                <td class="p-3 text-gray-300 leading-snug">${m.desc}</td>
+                                <td class="p-3 align-top text-right flex flex-col items-end gap-1"><span class="px-2 py-1 rounded text-[9px] font-bold tracking-wider badge-green whitespace-nowrap">${m.badge || ''}</span>${rvolHtml}${squeezeHtml}</td>
+                            </tr>
+                        `;
+                    });
+                    document.getElementById('movers-longs').innerHTML = longsHtml;
+
+                    let shortsHtml = '';
+                    (data.sections.movers.shorts || []).forEach(m => {
+                        const rvolHtml = m.rvol ? `<span class="px-2 py-1 rounded text-[9px] font-bold tracking-wider badge-yellow mt-1 inline-block whitespace-nowrap">${m.rvol}</span>` : '';
+                        shortsHtml += `
+                            <tr class="border-b border-gray-800 hover:bg-gray-800/30 transition-colors">
+                                <td class="p-3 w-20 align-top ticker-highlight">${m.ticker}</td>
+                                <td class="p-3 w-16 align-top percent-down font-bold">${m.percent}</td>
+                                <td class="p-3 text-gray-300 leading-snug">${m.desc}</td>
+                                <td class="p-3 align-top text-right flex flex-col items-end gap-1"><span class="px-2 py-1 rounded text-[9px] font-bold tracking-wider badge-red whitespace-nowrap">${m.badge || ''}</span>${rvolHtml}</td>
+                            </tr>
+                        `;
+                    });
+                    document.getElementById('movers-shorts').innerHTML = shortsHtml;
+                }
+
+                // 7. Secondary
+                if(data.sections.secondary) {
+                    let secHtml = '';
+                    data.sections.secondary.forEach(s => {
+                        secHtml += `
+                            <tr class="border-b border-gray-800 hover:bg-gray-800/30 transition-colors">
+                                <td class="p-3 w-24 align-top ticker-highlight">${s.ticker} <br><span class="text-[9px] text-gray-500">${s.percent}</span></td>
+                                <td class="p-3 text-gray-300 leading-snug">${s.desc}</td>
+                            </tr>
+                        `;
+                    });
+                    document.getElementById('secondary-content').innerHTML = secHtml;
+                }
+
+                // 8. Week
+                if(data.sections.week) {
+                    let weekHtml = '';
+                    (data.sections.week.days || []).forEach(d => {
+                        weekHtml += `
+                            <tr class="border-b border-gray-800">
+                                <td class="p-3 w-24 text-white font-bold align-top">${d.day}</td>
+                                <td class="p-3 text-gray-400">${d.events}</td>
+                            </tr>
+                        `;
+                    });
+                    document.getElementById('week-days').innerHTML = weekHtml;
+                    if(data.sections.week.risk) {
+                        document.getElementById('week-risk').innerHTML = `
+                            <div class="bg-gray-800/50 border border-gray-700 rounded p-3 text-[11px]">
+                                <span class="text-yellow-500 font-bold">⚠ 핵심 리스크:</span> ${data.sections.week.risk}
+                            </div>
+                        `;
+                    } else {
+                        document.getElementById('week-risk').innerHTML = '';
+                    }
+                }
+
+                // 9. After Market Review Fetch
+                const amContainer = document.getElementById('after-market-container');
+                const amContent = document.getElementById('after-market-content');
+                if (amContainer && amContent) {
+                    // Initialize as hidden
+                    amContainer.classList.add('hidden');
+                    amContent.textContent = '로딩 중...';
+                    
+                    fetch(`/api/after_market_review?date=${dateKey}`)
+                        .then(res => res.json())
+                        .then(resData => {
+                            if (resData.status === "success" && resData.content) {
+                                amContent.textContent = resData.content;
+                                amContainer.classList.remove('hidden');
+                            }
+                        })
+                        .catch(e => console.log("No after market review available for this date.", e));
+                }
+            }
+
+            // 아카이브 파일의 실제 최종 수정 시간(업데이트 시간) 가져오기
+            fetch('./krx_rundown_archive.js?v=' + new Date().getTime(), {method: 'HEAD'})
+                .then(res => {
+                    const lastMod = res.headers.get('Last-Modified');
+                    if (lastMod) {
+                        const d = new Date(lastMod);
+                        const timeStr = d.toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute:'2-digit', second:'2-digit', hour12: false });
+                        document.getElementById('update-time-display').innerHTML = '<i class="fas fa-check-circle text-green-400 mr-1"></i>최종 업데이트: ' + timeStr;
+                        // 각 목차 헤더에도 업데이트 시간 표기
+                        document.querySelectorAll('.section-update-time').forEach(el => {
+                            el.textContent = '최종 업데이트: ' + timeStr;
+                        });
+                    } else {
+                        document.getElementById('update-time-display').innerHTML = '<i class="fas fa-exclamation-circle text-yellow-400 mr-1"></i>실시간(Live) 모드';
+                    }
+                }).catch(e => {
+                    document.getElementById('update-time-display').style.display = 'none';
+                });
+        });
+    </script>
 </body>
 </html>
